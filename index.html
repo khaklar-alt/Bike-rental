@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Koh Phangan Bike Rentals</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --surface: #171717;
+    --surface2: #1f1f1f;
+    --surface3: #2a2a2a;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #f0ede8;
+    --muted: #888880;
+    --accent: #e8c84a;
+    --accent2: #f5a623;
+    --green: #4ade80;
+    --red: #f87171;
+    --blue: #60a5fa;
+    --radius: 14px;
+    --radius-sm: 8px;
+    font-size: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    max-width: 430px;
+    margin: 0 auto;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 20px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .header-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; color: var(--accent); letter-spacing: -0.5px; }
+  .header-sub { font-size: 11px; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; margin-top: 1px; }
+  .header-right { display: flex; gap: 8px; }
+
+  /* NAV */
+  .nav {
+    display: flex;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 430px;
+    z-index: 100;
+  }
+  .nav-btn {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    padding: 10px 4px 12px; background: none; border: none; cursor: pointer;
+    color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 10px;
+    letter-spacing: 0.3px; gap: 4px; transition: color 0.15s;
+  }
+  .nav-btn.active { color: var(--accent); }
+  .nav-icon { font-size: 20px; line-height: 1; }
+
+  /* PAGES */
+  .page { display: none; padding: 20px 20px 90px; animation: fadeIn 0.2s ease; }
+  .page.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* SECTION HEADING */
+  .section-title {
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 22px;
+    color: var(--text); margin-bottom: 4px;
+  }
+  .section-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+
+  /* BIKE CARDS */
+  .bike-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    position: relative;
+  }
+  .bike-card:active { background: var(--surface2); }
+  .bike-card.selected { border-color: var(--accent); background: rgba(232,200,74,0.06); }
+  .bike-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
+  .bike-brand { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 17px; color: var(--text); }
+  .bike-plate {
+    background: var(--accent); color: #0d0d0d; font-weight: 700;
+    font-size: 12px; padding: 3px 8px; border-radius: 5px; letter-spacing: 0.5px;
+    font-family: 'Syne', sans-serif;
+  }
+  .bike-specs { display: flex; gap: 8px; flex-wrap: wrap; }
+  .bike-spec {
+    background: var(--surface3); color: var(--muted); font-size: 12px;
+    padding: 4px 9px; border-radius: var(--radius-sm); display: flex; align-items: center; gap: 4px;
+  }
+  .bike-spec span { color: var(--text); font-weight: 500; }
+  .bike-actions { display: flex; gap: 8px; margin-top: 12px; }
+  .btn-sm {
+    flex: 1; padding: 8px 0; border-radius: var(--radius-sm); font-size: 13px;
+    font-family: 'DM Sans', sans-serif; font-weight: 500; border: none; cursor: pointer; transition: opacity 0.15s;
+  }
+  .btn-sm:active { opacity: 0.7; }
+  .btn-rent { background: var(--accent); color: #0d0d0d; }
+  .btn-edit { background: var(--surface3); color: var(--text); border: 1px solid var(--border2); }
+  .btn-delete { background: rgba(248,113,113,0.12); color: var(--red); border: 1px solid rgba(248,113,113,0.25); }
+
+  /* ADD BIKE BUTTON */
+  .fab {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--accent); color: #0d0d0d;
+    border: none; border-radius: var(--radius); padding: 13px 20px;
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px;
+    cursor: pointer; width: 100%; justify-content: center; margin-bottom: 20px;
+    transition: opacity 0.15s;
+  }
+  .fab:active { opacity: 0.8; }
+
+  /* FORMS */
+  .form-group { margin-bottom: 16px; }
+  .form-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block; }
+  .form-input, .form-select {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); padding: 12px 14px; color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 15px; outline: none;
+    transition: border-color 0.15s;
+    -webkit-appearance: none;
+  }
+  .form-input:focus, .form-select:focus { border-color: var(--accent); }
+  .form-input::placeholder { color: var(--muted); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-section {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px; margin-bottom: 16px;
+  }
+  .form-section-title {
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px;
+    color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* PRICE CALCULATOR */
+  .price-calc {
+    background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius);
+    padding: 16px; margin-bottom: 16px;
+  }
+  .price-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 14px; }
+  .price-row + .price-row { border-top: 1px solid var(--border); }
+  .price-label { color: var(--muted); }
+  .price-value { color: var(--text); font-weight: 500; }
+  .price-total {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 12px; padding-top: 12px; border-top: 2px solid var(--accent);
+  }
+  .price-total-label { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; color: var(--text); }
+  .price-total-value { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 24px; color: var(--accent); }
+
+  /* SUMMARY */
+  .summary-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px; margin-bottom: 12px;
+  }
+  .summary-card-title {
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 12px;
+    color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .summary-row { display: flex; justify-content: space-between; align-items: baseline; padding: 5px 0; font-size: 14px; }
+  .summary-row + .summary-row { border-top: 1px solid var(--border); }
+  .summary-key { color: var(--muted); flex-shrink: 0; min-width: 110px; }
+  .summary-val { color: var(--text); text-align: right; font-weight: 500; word-break: break-all; }
+  .summary-big {
+    background: linear-gradient(135deg, rgba(232,200,74,0.12), rgba(245,166,35,0.08));
+    border: 1px solid rgba(232,200,74,0.3); border-radius: var(--radius);
+    padding: 20px; text-align: center; margin-bottom: 16px;
+  }
+  .summary-big-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .summary-big-price { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 40px; color: var(--accent); }
+  .summary-big-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .btn-primary {
+    width: 100%; padding: 15px; background: var(--accent); color: #0d0d0d;
+    border: none; border-radius: var(--radius); font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: 16px; cursor: pointer; transition: opacity 0.15s; margin-bottom: 10px;
+  }
+  .btn-primary:active { opacity: 0.8; }
+  .btn-secondary {
+    width: 100%; padding: 14px; background: transparent; color: var(--text);
+    border: 1px solid var(--border2); border-radius: var(--radius); font-family: 'DM Sans', sans-serif;
+    font-weight: 500; font-size: 15px; cursor: pointer; transition: background 0.15s; margin-bottom: 10px;
+  }
+  .btn-secondary:active { background: var(--surface2); }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+    z-index: 200; align-items: flex-end; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: 20px 20px 0 0; border-top: 1px solid var(--border2);
+    padding: 24px 20px 40px; width: 100%; max-width: 430px;
+    max-height: 88vh; overflow-y: auto;
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .modal-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; }
+  .modal-close { background: var(--surface3); border: none; color: var(--muted); width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+    background: var(--green); color: #0d0d0d; padding: 10px 20px;
+    border-radius: 40px; font-weight: 600; font-size: 14px;
+    z-index: 300; opacity: 0; transition: opacity 0.3s; pointer-events: none;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; }
+
+  /* EMPTY STATE */
+  .empty {
+    text-align: center; padding: 50px 20px; color: var(--muted);
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-text { font-size: 15px; }
+
+  /* STATUS BADGE */
+  .badge {
+    display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 20px;
+    font-weight: 600;
+  }
+  .badge-available { background: rgba(74,222,128,0.15); color: var(--green); }
+  .badge-rented { background: rgba(248,113,113,0.15); color: var(--red); }
+
+  /* DISCOUNT */
+  .discount-row { display: flex; gap: 10px; align-items: center; }
+  .discount-toggle {
+    background: var(--surface3); border: 1px solid var(--border2); border-radius: var(--radius-sm);
+    padding: 10px 14px; color: var(--muted); font-size: 14px; cursor: pointer;
+    white-space: nowrap; transition: background 0.15s;
+  }
+  .discount-toggle.on { background: rgba(232,200,74,0.12); color: var(--accent); border-color: rgba(232,200,74,0.3); }
+
+  select option { background: #1f1f1f; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-logo">🏍 BikeRent</div>
+    <div class="header-sub">Koh Phangan</div>
+  </div>
+  <div id="headerBadge"></div>
+</div>
+
+<!-- PAGE: BIKES -->
+<div class="page active" id="page-bikes">
+  <div class="section-title">Fleet</div>
+  <div class="section-sub" id="fleetSub">Manage your rental bikes</div>
+  <button class="fab" onclick="openBikeModal()">+ Add New Bike</button>
+  <div id="bikeList"></div>
+</div>
+
+<!-- PAGE: RENTAL FORM -->
+<div class="page" id="page-rental">
+  <div class="section-title">New Rental</div>
+  <div class="section-sub">Fill in renter details</div>
+
+  <div id="selectedBikeCard" style="margin-bottom:16px;"></div>
+
+  <div class="form-section">
+    <div class="form-section-title">🧑 Renter Information</div>
+    <div class="form-group">
+      <label class="form-label">Full Name</label>
+      <input class="form-input" id="rName" placeholder="e.g. John Smith" />
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Nationality</label>
+        <input class="form-input" id="rNationality" placeholder="e.g. British" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Passport No.</label>
+        <input class="form-input" id="rPassport" placeholder="AB1234567" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Phone Number</label>
+      <input class="form-input" id="rPhone" placeholder="+66 xx xxx xxxx" type="tel" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Hotel / Address</label>
+      <input class="form-input" id="rHotel" placeholder="e.g. Haad Rin Beach Resort, Bungalow 7" />
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="form-section-title">📅 Rental Duration & Pricing</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Price / Day (฿)</label>
+        <input class="form-input" id="rPriceDay" placeholder="250" type="number" oninput="calcPrice()" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Number of Days</label>
+        <input class="form-input" id="rDays" placeholder="3" type="number" oninput="calcPrice()" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Start Date</label>
+      <input class="form-input" id="rStartDate" type="date" />
+    </div>
+    <div class="form-group">
+      <label class="form-label" style="display:flex;justify-content:space-between;">
+        <span>Discount (optional)</span>
+        <button class="discount-toggle" id="discountToggle" onclick="toggleDiscount()" type="button">Off</button>
+      </label>
+      <div id="discountField" style="display:none; margin-top:8px;">
+        <div class="form-row">
+          <div class="form-group" style="margin:0">
+            <input class="form-input" id="rDiscount" placeholder="0" type="number" oninput="calcPrice()" />
+          </div>
+          <div class="form-group" style="margin:0">
+            <select class="form-select" id="rDiscountType" onchange="calcPrice()">
+              <option value="flat">฿ Flat amount</option>
+              <option value="percent">% Percentage</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="price-calc" id="priceCalc" style="display:none;">
+    <div class="price-row"><span class="price-label">Base price</span><span class="price-value" id="calcBase">฿0</span></div>
+    <div class="price-row" id="calcDiscountRow" style="display:none;">
+      <span class="price-label">Discount</span><span class="price-value" style="color:var(--green)" id="calcDiscount">-฿0</span>
+    </div>
+    <div class="price-total">
+      <span class="price-total-label">Total</span>
+      <span class="price-total-value" id="calcTotal">฿0</span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label">Notes (optional)</label>
+    <input class="form-input" id="rNotes" placeholder="Helmet included, extra key, etc." />
+  </div>
+
+  <button class="btn-primary" onclick="submitRental()">Review Booking →</button>
+</div>
+
+<!-- PAGE: SUMMARY -->
+<div class="page" id="page-summary">
+  <div class="section-title">Booking Summary</div>
+  <div class="section-sub">Review before confirming</div>
+  <div id="summaryContent"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="nav">
+  <button class="nav-btn active" id="nav-bikes" onclick="goPage('bikes')">
+    <span class="nav-icon">🏍</span>Fleet
+  </button>
+  <button class="nav-btn" id="nav-rental" onclick="goPage('rental')">
+    <span class="nav-icon">📋</span>New Rental
+  </button>
+  <button class="nav-btn" id="nav-summary" onclick="goPage('summary')">
+    <span class="nav-icon">✅</span>Summary
+  </button>
+</nav>
+
+<!-- MODAL: ADD/EDIT BIKE -->
+<div class="modal-overlay" id="bikeModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Add Bike</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="form-section" style="background:var(--surface2);margin-bottom:12px">
+      <div class="form-section-title">🏍 Bike Information</div>
+      <div class="form-group">
+        <label class="form-label">Plate Number</label>
+        <input class="form-input" id="mPlate" placeholder="กข 1234" />
+      </div>
+      <div class="form-row">
+        <div class="form-group" style="position:relative">
+          <label class="form-label">Brand</label>
+          <select class="form-select" id="mBrandSelect" onchange="onBrandSelect()">
+            <option value="">— Select —</option>
+            <option value="Honda">Honda</option>
+            <option value="Yamaha">Yamaha</option>
+            <option value="Suzuki">Suzuki</option>
+            <option value="__custom__">+ Add new…</option>
+          </select>
+          <input class="form-input" id="mBrandCustom" placeholder="Type brand name…" style="display:none;margin-top:8px;" oninput="syncCustomBrand()" />
+          <input type="hidden" id="mBrand" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Type / Model</label>
+          <select class="form-select" id="mTypeSelect" onchange="onTypeSelect()">
+            <option value="">— Select brand first —</option>
+          </select>
+          <input class="form-input" id="mTypeCustom" placeholder="Type model name…" style="display:none;margin-top:8px;" oninput="syncCustomType()" />
+          <input type="hidden" id="mType" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">CC (engine)</label>
+          <input class="form-input" id="mCC" placeholder="125" type="number" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Kilometers</label>
+          <input class="form-input" id="mKm" placeholder="12500" type="number" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Last Oil Change</label>
+          <input class="form-input" id="mOil" type="date" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Service</label>
+          <input class="form-input" id="mService" type="date" />
+        </div>
+      </div>
+    </div>
+    <input type="hidden" id="mEditId" value="" />
+    <button class="btn-primary" onclick="saveBike()">Save Bike</button>
+    <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────────────
+let bikes = JSON.parse(localStorage.getItem('bra_bikes') || '[]');
+let currentRental = JSON.parse(localStorage.getItem('bra_rental') || '{}');
+let discountEnabled = false;
+let selectedBikeId = currentRental.bikeId || null;
+let customBrands = JSON.parse(localStorage.getItem('bra_custom_brands') || '[]');
+let customTypes = JSON.parse(localStorage.getItem('bra_custom_types') || '{}');
+
+const BRAND_TYPES = {
+  Honda:  ['Wave','Cub','Click','Scoopy','ADV','PCX','Forza','CBR'],
+  Yamaha: ['NMAX','XMAX','Aerox','Mio','Fino','MT-03','YZF-R3'],
+  Suzuki: ['Address','Burgman','GSX-S','Raider','Smash']
+};
+
+function save() {
+  localStorage.setItem('bra_bikes', JSON.stringify(bikes));
+  localStorage.setItem('bra_rental', JSON.stringify(currentRental));
+  localStorage.setItem('bra_custom_brands', JSON.stringify(customBrands));
+  localStorage.setItem('bra_custom_types', JSON.stringify(customTypes));
+}
+
+// ── NAVIGATION ─────────────────────────────────────────────────────────
+function goPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+  if (name === 'bikes') renderBikes();
+  if (name === 'rental') renderRentalPage();
+  if (name === 'summary') renderSummary();
+}
+
+// ── BIKE LIST ──────────────────────────────────────────────────────────
+function renderBikes() {
+  const list = document.getElementById('bikeList');
+  const sub = document.getElementById('fleetSub');
+  sub.textContent = bikes.length + ' bike' + (bikes.length !== 1 ? 's' : '') + ' in fleet';
+  if (!bikes.length) {
+    list.innerHTML = `<div class="empty"><div class="empty-icon">🏍</div><div class="empty-text">No bikes yet. Add your first bike.</div></div>`;
+    return;
+  }
+  list.innerHTML = bikes.map(b => {
+    const status = b.rented ? 'badge-rented">Rented' : 'badge-available">Available';
+    return `<div class="bike-card ${selectedBikeId === b.id ? 'selected' : ''}" onclick="selectBike('${b.id}')">
+      <div class="bike-card-top">
+        <div>
+          <div class="bike-brand">${b.brand}${b.type ? ' <span style="color:var(--accent2)">' + b.type + '</span>' : ''} <span style="font-weight:400;font-size:14px;color:var(--muted)">${b.cc}cc</span></div>
+          <span class="badge ${status}</span>
+        </div>
+        <div class="bike-plate">${b.plate}</div>
+      </div>
+      <div class="bike-specs">
+        <div class="bike-spec">⚙ <span>${b.km ? parseInt(b.km).toLocaleString() : '—'} km</span></div>
+        <div class="bike-spec">🛢 <span>${b.oil || '—'}</span></div>
+        <div class="bike-spec">🔧 <span>${b.service || '—'}</span></div>
+      </div>
+      <div class="bike-actions">
+        <button class="btn-sm btn-rent" onclick="event.stopPropagation();rentBike('${b.id}')">Rent This Bike</button>
+        <button class="btn-sm btn-edit" onclick="event.stopPropagation();openBikeModal('${b.id}')">Edit</button>
+        <button class="btn-sm btn-delete" onclick="event.stopPropagation();deleteBike('${b.id}')">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function selectBike(id) {
+  selectedBikeId = id;
+  renderBikes();
+}
+
+function rentBike(id) {
+  selectedBikeId = id;
+  currentRental = { bikeId: id };
+  save();
+  goPage('rental');
+}
+
+function deleteBike(id) {
+  if (!confirm('Delete this bike?')) return;
+  bikes = bikes.filter(b => b.id !== id);
+  if (selectedBikeId === id) selectedBikeId = null;
+  save();
+  renderBikes();
+  toast('Bike removed');
+}
+
+// ── BIKE MODAL ─────────────────────────────────────────────────────────
+function buildBrandSelect(selected) {
+  const sel = document.getElementById('mBrandSelect');
+  const allBrands = [...Object.keys(BRAND_TYPES), ...customBrands];
+  sel.innerHTML = '<option value="">— Select —</option>' +
+    allBrands.map(b => `<option value="${b}"${b===selected?' selected':''}>${b}</option>`).join('') +
+    '<option value="__custom__">+ Add new…</option>';
+}
+
+function buildTypeSelect(brand, selected) {
+  const sel = document.getElementById('mTypeSelect');
+  const known = BRAND_TYPES[brand] || [];
+  const custom = customTypes[brand] || [];
+  const all = [...known, ...custom];
+  if (!brand) {
+    sel.innerHTML = '<option value="">— Select brand first —</option>';
+    document.getElementById('mType').value = '';
+    return;
+  }
+  sel.innerHTML = '<option value="">— Select type —</option>' +
+    all.map(t => `<option value="${t}"${t===selected?' selected':''}>${t}</option>`).join('') +
+    '<option value="__custom__">+ Add new…</option>';
+  document.getElementById('mTypeCustom').style.display = 'none';
+}
+
+function onBrandSelect() {
+  const val = document.getElementById('mBrandSelect').value;
+  const customInput = document.getElementById('mBrandCustom');
+  if (val === '__custom__') {
+    customInput.style.display = 'block';
+    customInput.focus();
+    document.getElementById('mBrand').value = '';
+  } else {
+    customInput.style.display = 'none';
+    document.getElementById('mBrand').value = val;
+    buildTypeSelect(val, '');
+  }
+}
+
+function syncCustomBrand() {
+  const v = document.getElementById('mBrandCustom').value.trim();
+  document.getElementById('mBrand').value = v;
+  buildTypeSelect(v, '');
+}
+
+function onTypeSelect() {
+  const val = document.getElementById('mTypeSelect').value;
+  const customInput = document.getElementById('mTypeCustom');
+  if (val === '__custom__') {
+    customInput.style.display = 'block';
+    customInput.focus();
+    document.getElementById('mType').value = '';
+  } else {
+    customInput.style.display = 'none';
+    document.getElementById('mType').value = val;
+  }
+}
+
+function syncCustomType() {
+  document.getElementById('mType').value = document.getElementById('mTypeCustom').value.trim();
+}
+
+function openBikeModal(id) {
+  document.getElementById('bikeModal').classList.add('open');
+  const editId = id || '';
+  document.getElementById('mEditId').value = editId;
+  document.getElementById('mBrandCustom').style.display = 'none';
+  document.getElementById('mTypeCustom').style.display = 'none';
+  if (id) {
+    const b = bikes.find(x => x.id === id);
+    document.getElementById('modalTitle').textContent = 'Edit Bike';
+    document.getElementById('mPlate').value = b.plate || '';
+    document.getElementById('mCC').value = b.cc || '';
+    document.getElementById('mKm').value = b.km || '';
+    document.getElementById('mOil').value = b.oil || '';
+    document.getElementById('mService').value = b.service || '';
+    document.getElementById('mBrand').value = b.brand || '';
+    document.getElementById('mType').value = b.type || '';
+    buildBrandSelect(b.brand || '');
+    buildTypeSelect(b.brand || '', b.type || '');
+  } else {
+    document.getElementById('modalTitle').textContent = 'Add Bike';
+    ['mPlate','mCC','mKm','mOil','mService'].forEach(f => document.getElementById(f).value = '');
+    document.getElementById('mBrand').value = '';
+    document.getElementById('mType').value = '';
+    buildBrandSelect('');
+    buildTypeSelect('', '');
+  }
+}
+
+function closeModal() {
+  document.getElementById('bikeModal').classList.remove('open');
+}
+
+function saveBike() {
+  const plate = document.getElementById('mPlate').value.trim();
+  const brand = document.getElementById('mBrand').value.trim();
+  const type  = document.getElementById('mType').value.trim();
+  if (!plate || !brand) { toast('Plate and brand are required', true); return; }
+
+  // Persist custom brand
+  const knownBrands = [...Object.keys(BRAND_TYPES), ...customBrands];
+  if (brand && !knownBrands.includes(brand)) {
+    customBrands.push(brand);
+  }
+  // Persist custom type
+  if (type) {
+    const knownTypes = [...(BRAND_TYPES[brand] || []), ...(customTypes[brand] || [])];
+    if (!knownTypes.includes(type)) {
+      customTypes[brand] = customTypes[brand] || [];
+      customTypes[brand].push(type);
+    }
+  }
+
+  const editId = document.getElementById('mEditId').value;
+  const data = {
+    plate, brand, type,
+    cc: document.getElementById('mCC').value,
+    km: document.getElementById('mKm').value,
+    oil: document.getElementById('mOil').value,
+    service: document.getElementById('mService').value,
+    rented: false
+  };
+  if (editId) {
+    const idx = bikes.findIndex(b => b.id === editId);
+    bikes[idx] = { ...bikes[idx], ...data };
+  } else {
+    data.id = Date.now().toString();
+    bikes.push(data);
+  }
+  save();
+  closeModal();
+  renderBikes();
+  toast(editId ? 'Bike updated' : 'Bike added!');
+}
+
+// ── RENTAL FORM ────────────────────────────────────────────────────────
+function renderRentalPage() {
+  const card = document.getElementById('selectedBikeCard');
+  const bike = bikes.find(b => b.id === selectedBikeId);
+  if (bike) {
+    card.innerHTML = `<div class="bike-card selected" style="cursor:default;margin-bottom:0">
+      <div class="bike-card-top">
+        <div><div class="bike-brand">${bike.brand}${bike.type ? ' <span style="color:var(--accent2)">' + bike.type + '</span>' : ''} <span style="font-weight:400;font-size:14px;color:var(--muted)">${bike.cc}cc</span></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">${bike.km ? parseInt(bike.km).toLocaleString() + ' km' : ''}</div></div>
+        <div class="bike-plate">${bike.plate}</div>
+      </div>
+    </div>`;
+  } else {
+    card.innerHTML = `<div style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);border-radius:var(--radius);padding:12px;font-size:13px;color:var(--red);margin-bottom:0">⚠ No bike selected — go to Fleet and tap "Rent This Bike"</div>`;
+  }
+  // Restore saved values
+  const r = currentRental;
+  ['rName','rNationality','rPassport','rPhone','rHotel','rPriceDay','rDays','rStartDate','rNotes'].forEach(f => {
+    const el = document.getElementById(f);
+    if (el && r[f]) el.value = r[f];
+  });
+  if (!document.getElementById('rStartDate').value) {
+    document.getElementById('rStartDate').value = new Date().toISOString().split('T')[0];
+  }
+  calcPrice();
+}
+
+function toggleDiscount() {
+  discountEnabled = !discountEnabled;
+  document.getElementById('discountField').style.display = discountEnabled ? 'block' : 'none';
+  const btn = document.getElementById('discountToggle');
+  btn.textContent = discountEnabled ? 'On' : 'Off';
+  btn.className = 'discount-toggle' + (discountEnabled ? ' on' : '');
+  calcPrice();
+}
+
+function calcPrice() {
+  const days = parseFloat(document.getElementById('rDays').value) || 0;
+  const priceDay = parseFloat(document.getElementById('rPriceDay').value) || 0;
+  const base = days * priceDay;
+  let disc = 0;
+  const discVal = parseFloat(document.getElementById('rDiscount').value) || 0;
+  const discType = document.getElementById('rDiscountType').value;
+  if (discountEnabled && discVal > 0) {
+    disc = discType === 'percent' ? base * (discVal / 100) : discVal;
+    disc = Math.min(disc, base);
+  }
+  const total = base - disc;
+  const calcDiv = document.getElementById('priceCalc');
+  if (base > 0) {
+    calcDiv.style.display = 'block';
+    document.getElementById('calcBase').textContent = '฿' + base.toLocaleString();
+    const discRow = document.getElementById('calcDiscountRow');
+    if (disc > 0) {
+      discRow.style.display = 'flex';
+      document.getElementById('calcDiscount').textContent = '-฿' + disc.toLocaleString();
+    } else { discRow.style.display = 'none'; }
+    document.getElementById('calcTotal').textContent = '฿' + total.toLocaleString();
+  } else { calcDiv.style.display = 'none'; }
+}
+
+function submitRental() {
+  if (!selectedBikeId) { toast('Select a bike first!', true); return; }
+  const fields = [
+    ['rName', 'Name'], ['rNationality', 'Nationality'], ['rPassport', 'Passport No.'],
+    ['rPhone', 'Phone'], ['rPriceDay', 'Price/Day'], ['rDays', 'Number of Days']
+  ];
+  for (const [id, label] of fields) {
+    if (!document.getElementById(id).value.trim()) { toast(label + ' is required', true); return; }
+  }
+  currentRental = {
+    bikeId: selectedBikeId,
+    rName: document.getElementById('rName').value,
+    rNationality: document.getElementById('rNationality').value,
+    rPassport: document.getElementById('rPassport').value,
+    rPhone: document.getElementById('rPhone').value,
+    rHotel: document.getElementById('rHotel').value,
+    rPriceDay: document.getElementById('rPriceDay').value,
+    rDays: document.getElementById('rDays').value,
+    rStartDate: document.getElementById('rStartDate').value,
+    rDiscount: discountEnabled ? document.getElementById('rDiscount').value : '',
+    rDiscountType: document.getElementById('rDiscountType').value,
+    rNotes: document.getElementById('rNotes').value,
+    discountEnabled
+  };
+  save();
+  goPage('summary');
+}
+
+// ── SUMMARY ────────────────────────────────────────────────────────────
+function renderSummary() {
+  const r = currentRental;
+  const bike = bikes.find(b => b.id === r.bikeId);
+  const div = document.getElementById('summaryContent');
+
+  if (!r.rName || !bike) {
+    div.innerHTML = `<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No rental in progress. Start from Fleet.</div></div>
+    <button class="btn-secondary" onclick="goPage('bikes')">← Go to Fleet</button>`;
+    return;
+  }
+
+  const days = parseFloat(r.rDays) || 0;
+  const priceDay = parseFloat(r.rPriceDay) || 0;
+  const base = days * priceDay;
+  let disc = 0;
+  if (r.discountEnabled && r.rDiscount) {
+    const dv = parseFloat(r.rDiscount) || 0;
+    disc = r.rDiscountType === 'percent' ? base * (dv / 100) : dv;
+    disc = Math.min(disc, base);
+  }
+  const total = base - disc;
+
+  // Calculate return date
+  let returnDate = '';
+  if (r.rStartDate && days) {
+    const d = new Date(r.rStartDate);
+    d.setDate(d.getDate() + days);
+    returnDate = d.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+  }
+
+  div.innerHTML = `
+    <div class="summary-big">
+      <div class="summary-big-label">Total Amount Due</div>
+      <div class="summary-big-price">฿${total.toLocaleString()}</div>
+      <div class="summary-big-sub">${days} day${days !== 1 ? 's' : ''} × ฿${parseFloat(priceDay).toLocaleString()}/day${disc > 0 ? ' · Discount -฿' + disc.toLocaleString() : ''}</div>
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-card-title">🏍 Bike Details</div>
+      <div class="summary-row"><span class="summary-key">Brand</span><span class="summary-val">${bike.brand}</span></div>
+      ${bike.type ? `<div class="summary-row"><span class="summary-key">Type / Model</span><span class="summary-val">${bike.type}</span></div>` : ''}
+      <div class="summary-row"><span class="summary-key">Plate Number</span><span class="summary-val">${bike.plate}</span></div>
+      <div class="summary-row"><span class="summary-key">Engine CC</span><span class="summary-val">${bike.cc || '—'}cc</span></div>
+      <div class="summary-row"><span class="summary-key">Kilometers</span><span class="summary-val">${bike.km ? parseInt(bike.km).toLocaleString() + ' km' : '—'}</span></div>
+      <div class="summary-row"><span class="summary-key">Last Oil Change</span><span class="summary-val">${bike.oil || '—'}</span></div>
+      <div class="summary-row"><span class="summary-key">Last Service</span><span class="summary-val">${bike.service || '—'}</span></div>
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-card-title">🧑 Renter Details</div>
+      <div class="summary-row"><span class="summary-key">Name</span><span class="summary-val">${r.rName}</span></div>
+      <div class="summary-row"><span class="summary-key">Nationality</span><span class="summary-val">${r.rNationality}</span></div>
+      <div class="summary-row"><span class="summary-key">Passport No.</span><span class="summary-val">${r.rPassport}</span></div>
+      <div class="summary-row"><span class="summary-key">Phone</span><span class="summary-val">${r.rPhone}</span></div>
+      <div class="summary-row"><span class="summary-key">Hotel / Address</span><span class="summary-val">${r.rHotel || '—'}</span></div>
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-card-title">📅 Rental Period</div>
+      <div class="summary-row"><span class="summary-key">Start Date</span><span class="summary-val">${r.rStartDate ? new Date(r.rStartDate).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}) : '—'}</span></div>
+      <div class="summary-row"><span class="summary-key">Return Date</span><span class="summary-val">${returnDate || '—'}</span></div>
+      <div class="summary-row"><span class="summary-key">Days</span><span class="summary-val">${days}</span></div>
+      <div class="summary-row"><span class="summary-key">Price / Day</span><span class="summary-val">฿${parseFloat(priceDay).toLocaleString()}</span></div>
+      ${disc > 0 ? `<div class="summary-row"><span class="summary-key">Discount</span><span class="summary-val" style="color:var(--green)">-฿${disc.toLocaleString()}</span></div>` : ''}
+      <div class="summary-row"><span class="summary-key" style="font-weight:600;color:var(--text)">Total</span><span class="summary-val" style="color:var(--accent);font-size:17px">฿${total.toLocaleString()}</span></div>
+      ${r.rNotes ? `<div class="summary-row"><span class="summary-key">Notes</span><span class="summary-val">${r.rNotes}</span></div>` : ''}
+    </div>
+
+    <button class="btn-primary" onclick="confirmRental()">✓ Confirm Rental</button>
+    <button class="btn-secondary" onclick="goPage('rental')">← Edit Details</button>
+    <button class="btn-secondary" onclick="printSummary()" style="margin-bottom:20px">🖨 Print / Save PDF</button>
+  `;
+}
+
+function confirmRental() {
+  const bike = bikes.find(b => b.id === selectedBikeId);
+  if (bike) { bike.rented = true; save(); }
+  toast('Rental confirmed! 🎉');
+  setTimeout(() => {
+    currentRental = {};
+    selectedBikeId = null;
+    save();
+    goPage('bikes');
+  }, 1500);
+}
+
+function printSummary() { window.print(); }
+
+// ── TOAST ──────────────────────────────────────────────────────────────
+function toast(msg, isErr) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = isErr ? 'var(--red)' : 'var(--green)';
+  t.style.color = isErr ? '#fff' : '#0d0d0d';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── INIT ───────────────────────────────────────────────────────────────
+renderBikes();
+</script>
+</body>
+</html>
